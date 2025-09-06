@@ -14,7 +14,7 @@ export type ParcelData = {
 // Enhanced validation result interface
 export interface ValidationResult {
     isValid: boolean;
-    invalidDataType?: 'FLOODZONE' | 'PARCEL' | 'UNKNOWN';
+    invalidDataType?: 'FLOODZONE' | 'PARCEL' | 'NO_DATA' | 'UNKNOWN';
     invalidLine?: string;
   }
   

@@ -16,6 +16,7 @@ function verifyFileExtension(file: string) {
   return false;
 }
 
+// Verify that the file exists
 function verifyFileExists(file: string) {
   if (fs.existsSync(file)) {
     return true;
@@ -34,161 +35,119 @@ function readFile(file: string): FileReadResult {
 
 // Verify that the file is in the correct format
 function verifyCorrectFormat(data: string): ValidationResult {
-  const lines = data.split("\n").filter((line) => line.trim() !== "");
+  const lines = data.split("\n").filter((line) => line.trim());
 
   if (lines.length === 0) {
-    return { isValid: false, invalidDataType: "UNKNOWN" };
+    return { isValid: false, invalidDataType: "NO_DATA" };
   }
 
-  for (const line of lines) {
-    let isValidLine = false;
-    let dataType: "FLOODZONE" | "PARCEL" | "UNKNOWN" = "UNKNOWN";
+  const invalidLine = lines.find((line) => {
+    return (
+      !(line.startsWith(FLOODZONE) && verifyFloodzoneData(line)) &&
+      !(line.startsWith(PARCEL) && verifyParcelData(line))
+    );
+  });
 
-    if (line.startsWith(FLOODZONE)) {
-      isValidLine = verifyFloodzoneData(line);
-      dataType = "FLOODZONE";
-    } else if (line.startsWith(PARCEL)) {
-      isValidLine = verifyParcelData(line);
-      dataType = "PARCEL";
-    }
-
-    if (!isValidLine) {
-      return {
-        isValid: false,
-        invalidDataType: dataType,
-        invalidLine: line,
-      };
-    }
+  if (invalidLine) {
+    const dataType = invalidLine.startsWith(FLOODZONE)
+      ? "FLOODZONE"
+      : invalidLine.startsWith(PARCEL)
+      ? "PARCEL"
+      : "UNKNOWN";
+    return { isValid: false, invalidDataType: dataType, invalidLine };
   }
 
   return { isValid: true };
 }
 
-// Verify that the data is in the correct format for floodzones
+// Verify that the floodzone data is in the correct format
 function verifyFloodzoneData(data: string) {
-  const parts = data.trim().split(" ");
+  const parts = data.split(" ");
 
-  if (parts[0] !== FLOODZONE) {
-    return false;
-  }
-
-  const identifier = parts[1] as FloodzoneIdentifier;
-  const validIdentifiers: FloodzoneIdentifier[] = ["X", "AE", "VE"];
-
-  if (!validIdentifiers.includes(identifier)) {
-    return false;
-  }
-
-  const coordinates = parts.slice(2);
-
-  if (coordinates.length < 4) {
-    return false;
-  }
-
-  for (const coord of coordinates) {
-    if (!coord.match(/^\d+,\d+$/)) {
-      return false;
-    }
-  }
-
-  return true;
+  return parts[0] === FLOODZONE &&
+         ["X", "AE", "VE"].includes(parts[1] as FloodzoneIdentifier) &&
+         parts.length === 6 && // type + id + 4 coords
+         verifyCoordinates(parts.slice(2));
 }
 
-// Verify that the data is in the correct format for parcels
+// Verify that the parcel data is in the correct format
 function verifyParcelData(data: string) {
-  const parts = data.trim().split(" ");
+  const parts = data.split(" ");
 
-  if (parts[0] !== PARCEL) {
-    return false;
-  }
-
-  // Check if we have a parcel ID (should be a number)
-  const parcelId = parts[1];
-  if (isNaN(Number(parcelId))) {
-    return false;
-  }
-
-  // Check coordinates (should have at least 4 coordinate pairs)
-  const coordinates = parts.slice(2);
-
-  if (coordinates.length < 4) {
-    return false;
-  }
-
-  for (const coord of coordinates) {
-    if (!coord.match(/^\d+,\d+$/)) {
-      return false;
-    }
-  }
-
-  return true;
+  return parts[0] === PARCEL &&
+         !isNaN(Number(parts[1])) &&
+         parts.length === 6 && // type + id + 4 coords
+         verifyCoordinates(parts.slice(2));
 }
 
+// Verify that the coordinates are in the correct format
+function verifyCoordinates(coordinates: string[]) {
+  return (
+    coordinates.length === 4 &&
+    coordinates.every((coord) => /^\d+,\d+$/.test(coord))
+  );
+}
+
+// Parse the data into floodzones and parcels
 function parseData(data: string) {
-  const lines = data.split("\n").filter((line) => line.trim() !== "");
+  const floodzones: FloodzoneData[] = [];
+  const parcels: ParcelData[] = [];
 
-  let floodzones: FloodzoneData[] = [];
-  let parcels: ParcelData[] = [];
+  data.split("\n").forEach((line) => {
+    if (!line.trim()) return;
 
-  for (const line of lines) {
-    if (line.startsWith(FLOODZONE)) {
-      const parts = line.split(" ");
-      floodzones.push({
-        entityId: parts[1] as FloodzoneIdentifier,
-        coordinates: parts.slice(2).map((coord) => {
-          const [x, y] = coord.split(",");
-          return [Number(x), Number(y)];
-        }),
-      });
-    } else if (line.startsWith(PARCEL)) {
-      const parts = line.split(" ");
-      parcels.push({
-        entityId: Number(parts[1]),
-        coordinates: parts.slice(2).map((coord) => {
-          const [x, y] = coord.split(",");
-          return [Number(x), Number(y)];
-        }),
-      });
+    const [type, id, ...coords] = line.split(" ");
+    if (coords.length !== 4) return;
+
+    const coordinates = coords.map(
+      (c) => c.split(",").map(Number) as [number, number]
+    );
+
+    if (type === FLOODZONE) {
+      floodzones.push({ entityId: id as FloodzoneIdentifier, coordinates });
+    } else if (type === PARCEL) {
+      const entityId = Number(id);
+      
+      if (!isNaN(entityId)) parcels.push({ entityId, coordinates });
     }
-  }
+  });
 
-  return {
-    floodzones,
-    parcels,
-  };
+  return { floodzones, parcels };
 }
 
+// Handle the file
 function handleFile(options: { file: string }) {
-  if (!verifyFileExtension(options.file)) {
+  const { file } = options;
+  const validExtension = verifyFileExtension(file);
+
+  if (!validExtension) {
     process.stderr.write(
-      "---> Error: Invalid file format. File must be a .txt file."
+      "----- Error: Invalid file format. File must be a .txt file.\n"
     );
     process.exit(1);
   }
 
-  const fileResult = readFile(options.file);
+  const { isValid: isValidFile, data } = readFile(file);
 
-  if (!fileResult.isValid) {
-    process.stderr.write(`---> Error: File not found - ${options.file}`);
+  if (!isValidFile) {
+    process.stderr.write(`----- Error: File not found - ${file}\n`);
     process.exit(1);
   }
 
-  const validationResult = verifyCorrectFormat(fileResult.data!);
+  const { isValid: isValidFormat, invalidDataType } = verifyCorrectFormat(
+    data!
+  );
 
-  if (!validationResult.isValid) {
+  if (!isValidFormat) {
     process.stderr.write(
-      `---> Data format validation failed - invalid ${
-        validationResult.invalidDataType || "DATA"
-      } data found`
+      `----- Data format validation failed - invalid ${
+        invalidDataType || "DATA"
+      } data found\n`
     );
-  process.exit(1);
+    process.exit(1);
   }
 
-  const parsedData = parseData(fileResult.data!);
-
-  return parsedData;
+  return parseData(data!);
 }
 
-export {
-  handleFile,
-};
+export { handleFile };
