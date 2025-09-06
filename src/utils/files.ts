@@ -10,18 +10,17 @@ import {
 
 // Verify that the file is a txt file
 function verifyFileExtension(file: string) {
-  if (file.endsWith(".txt")) {
-    return true;
-  }
-  return false;
+  return file.endsWith(".txt");
 }
 
 // Verify that the file exists
 function verifyFileExists(file: string) {
-  if (fs.existsSync(file)) {
-    return true;
-  }
-  return false;
+  return fs.existsSync(file);
+}
+
+// Read the file data
+function readFileData(file: string) {
+  return fs.readFileSync(file, "utf8");
 }
 
 // Read the file
@@ -30,12 +29,17 @@ function readFile(file: string): FileReadResult {
     return { isValid: false, invalidDataType: "FILE_NOT_FOUND" };
   }
 
-  return { isValid: true, data: fs.readFileSync(file, "utf8") };
+  return { isValid: true, data: readFileData(file) };
+}
+
+// Parse the lines of the file
+function parseLines(data: string) {
+  return data.split("\n").filter((line) => line.trim());
 }
 
 // Verify that the file is in the correct format
 function verifyCorrectFormat(data: string): ValidationResult {
-  const lines = data.split("\n").filter((line) => line.trim());
+  const lines = parseLines(data);
 
   if (lines.length === 0) {
     return { isValid: false, invalidDataType: "NO_DATA" };
@@ -54,6 +58,7 @@ function verifyCorrectFormat(data: string): ValidationResult {
       : invalidLine.startsWith(PARCEL)
       ? "PARCEL"
       : "UNKNOWN";
+
     return { isValid: false, invalidDataType: dataType, invalidLine };
   }
 
@@ -64,20 +69,24 @@ function verifyCorrectFormat(data: string): ValidationResult {
 function verifyFloodzoneData(data: string) {
   const parts = data.split(" ");
 
-  return parts[0] === FLOODZONE &&
-         ["X", "AE", "VE"].includes(parts[1] as FloodzoneIdentifier) &&
-         parts.length === 6 && // type + id + 4 coords
-         verifyCoordinates(parts.slice(2));
+  return (
+    parts[0] === FLOODZONE &&
+    ["X", "AE", "VE"].includes(parts[1] as FloodzoneIdentifier) &&
+    parts.length === 6 &&
+    verifyCoordinates(parts.slice(2))
+  );
 }
 
 // Verify that the parcel data is in the correct format
 function verifyParcelData(data: string) {
   const parts = data.split(" ");
 
-  return parts[0] === PARCEL &&
-         !isNaN(Number(parts[1])) &&
-         parts.length === 6 && // type + id + 4 coords
-         verifyCoordinates(parts.slice(2));
+  return (
+    parts[0] === PARCEL &&
+    !isNaN(Number(parts[1])) &&
+    parts.length === 6 &&
+    verifyCoordinates(parts.slice(2))
+  );
 }
 
 // Verify that the coordinates are in the correct format
@@ -107,7 +116,7 @@ function parseData(data: string) {
       floodzones.push({ entityId: id as FloodzoneIdentifier, coordinates });
     } else if (type === PARCEL) {
       const entityId = Number(id);
-      
+
       if (!isNaN(entityId)) parcels.push({ entityId, coordinates });
     }
   });
@@ -116,9 +125,8 @@ function parseData(data: string) {
 }
 
 // Handle the file
-function handleFile(options: { file: string }) {
-  const { file } = options;
-  const validExtension = verifyFileExtension(file);
+function handleFile(filepath: string) {
+  const validExtension = verifyFileExtension(filepath);
 
   if (!validExtension) {
     process.stderr.write(
@@ -127,27 +135,23 @@ function handleFile(options: { file: string }) {
     process.exit(1);
   }
 
-  const { isValid: isValidFile, data } = readFile(file);
+  const { isValid: isValidFile, data } = readFile(filepath);
 
-  if (!isValidFile) {
-    process.stderr.write(`----- Error: File not found - ${file}\n`);
+  if (!isValidFile || !data) {
+    process.stderr.write(`----- Error: File not found - ${filepath}\n`);
     process.exit(1);
   }
 
-  const { isValid: isValidFormat, invalidDataType } = verifyCorrectFormat(
-    data!
-  );
+  const { isValid: isValidFormat, invalidDataType } = verifyCorrectFormat(data);
 
   if (!isValidFormat) {
     process.stderr.write(
-      `----- Data format validation failed - invalid ${
-        invalidDataType || "DATA"
-      } data found\n`
+      `----- Data format validation failed - invalid ${invalidDataType} data found\n`
     );
     process.exit(1);
   }
 
-  return parseData(data!);
+  return parseData(data);
 }
 
 export { handleFile };

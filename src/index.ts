@@ -1,6 +1,5 @@
 import { Command } from "commander";
 import { handleFile } from "./utils/files";
-
 import { handleGeoAnalysis } from "./utils/geo-analysis";
 
 const program = new Command();
@@ -10,7 +9,7 @@ program
   .description("Parcel Classification")
   .option("-f, --file <file>", "Path to the txt file")
   .action((options) => {
-    const parsedData = handleFile(options);
+    const parsedData = handleFile(options.file);
 
     handleGeoAnalysis(parsedData);
 

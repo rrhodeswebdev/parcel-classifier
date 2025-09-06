@@ -2,6 +2,7 @@ import * as turf from "@turf/turf";
 import { FloodzoneIdentifier, PolygonData } from "../types";
 import { Feature, Polygon } from "geojson";
 
+// Generate polygons from the data
 function generatePolygons(data: PolygonData[]) {
   const polygonData = prepareDataForPolygons(data);
 
@@ -10,6 +11,7 @@ function generatePolygons(data: PolygonData[]) {
   );
 }
 
+// Create a polygon from the data
 function createPolygon(
   coordinates: PolygonData["coordinates"],
   identifier: FloodzoneIdentifier | number
@@ -23,6 +25,7 @@ function createPolygon(
   return turf.polygon([closedCoordinates], properties);
 }
 
+// Ensure the polygon is closed
 function ensureClosedPolygon(coordinates: number[][]): number[][] {
   if (coordinates.length === 0) return coordinates;
 
@@ -36,6 +39,7 @@ function ensureClosedPolygon(coordinates: number[][]): number[][] {
   return coordinates;
 }
 
+// Prepare the data for polygons
 function prepareDataForPolygons(data: PolygonData[]) {
   return data.map((item) => {
     const closedCoordinates = [...item.coordinates];
@@ -48,6 +52,7 @@ function prepareDataForPolygons(data: PolygonData[]) {
   });
 }
 
+// Check for overlaps
 function checkOverlaps(
   floodzones: Feature<Polygon>[],
   parcels: Feature<Polygon>[]
@@ -62,12 +67,13 @@ function checkOverlaps(
   );
 }
 
+// Generate the insured parcels
 function generateInsuredParcels(
   overlaps: { parcel: string; floodzone: string }[]
 ) {
   const importanceOrder = ["VE", "AE", "X"];
 
-  const bestOverlaps = overlaps.reduce((acc, overlap) => {
+  const riskiestOverlaps = overlaps.reduce((acc, overlap) => {
     const existing = acc[overlap.parcel];
 
     if (
@@ -81,9 +87,10 @@ function generateInsuredParcels(
     return acc;
   }, {} as Record<string, { parcel: string; floodzone: string }>);
 
-  return Object.values(bestOverlaps);
+  return Object.values(riskiestOverlaps);
 }
 
+// Generate the insured output
 function generateInsuredOutput(
   insuredParcels: { parcel: string; floodzone: string }[]
 ) {
@@ -94,6 +101,7 @@ function generateInsuredOutput(
   });
 }
 
+// Handle the geo analysis
 function handleGeoAnalysis(parsedData: {
   floodzones: PolygonData[];
   parcels: PolygonData[];
