@@ -30,6 +30,7 @@
 Alternatively, you can run directly without global installation:
 
 ```bash
+npm run install
 npm run build
 node dist/index.js -f <file-path>
 ```
