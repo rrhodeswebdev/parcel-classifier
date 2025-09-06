@@ -77,8 +77,22 @@ function generateInsuredParcels(overlaps: { parcel: string; floodzone: string }[
 
 function generateInsuredOutput(insuredParcels: { parcel: string; floodzone: string }[]) {
   insuredParcels.map((overlap) => {
-    console.log(`Parcel ${overlap.parcel} should be insured by ${overlap.floodzone}`);
+    process.stdout.write(`\nParcel ${overlap.parcel} should be insured by ${overlap.floodzone}\n`);
   });
 }
 
-export { generatePolygons, checkOverlaps, generateInsuredParcels, generateInsuredOutput };
+function handleGeoAnalysis(parsedData: { floodzones: PolygonData[]; parcels: PolygonData[] }) {
+    const floodzones = parsedData.floodzones;
+    const parcels = parsedData.parcels;
+
+    const floodzonePolygons = generatePolygons(floodzones);
+    const parcelPolygons = generatePolygons(parcels);
+
+    const overlap = checkOverlaps(floodzonePolygons, parcelPolygons);
+
+    const insuredParcels = generateInsuredParcels(overlap);
+
+    generateInsuredOutput(insuredParcels);
+}
+
+export { handleGeoAnalysis };

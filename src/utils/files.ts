@@ -158,12 +158,37 @@ function parseData(data: string) {
   };
 }
 
+function handleFile(options: { file: string }) {
+  if (!verifyFileExtension(options.file)) {
+    process.stderr.write(
+      "---> Error: Invalid file format. File must be a .txt file."
+    );
+    process.exit(1);
+  }
+
+  const fileResult = readFile(options.file);
+
+  if (!fileResult.isValid) {
+    process.stderr.write(`---> Error: File not found - ${options.file}`);
+    process.exit(1);
+  }
+
+  const validationResult = verifyCorrectFormat(fileResult.data!);
+
+  if (!validationResult.isValid) {
+    process.stderr.write(
+      `---> Data format validation failed - invalid ${
+        validationResult.invalidDataType || "DATA"
+      } data found`
+    );
+  process.exit(1);
+  }
+
+  const parsedData = parseData(fileResult.data!);
+
+  return parsedData;
+}
+
 export {
-  verifyCorrectFormat,
-  verifyFileExtension,
-  verifyFileExists,
-  readFile,
-  verifyFloodzoneData,
-  verifyParcelData,
-  parseData,
+  handleFile,
 };
