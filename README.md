@@ -35,9 +35,29 @@ npm run build
 node dist/index.js -f <file-path>
 ```
 
+### Uninstall
+
+Simply run the following to uninstall the CLI tool
+
+```bash
+npm run cli:uninstall
+```
+
 ## Usage
 
 Once installed, you can use the CLI tool:
+
+```bash
+parcel-classification -f <file-path>
+```
+
+or
+
+```bash
+node dist/index.js -f <file-path>
+```
+
+For help, use the following
 
 ```bash
 parcel-classification --help
@@ -46,7 +66,7 @@ parcel-classification --help
 or
 
 ```bash
-node dist/index.js --help
+node dist/index.js -f <file-path>
 ```
 
 This will show you all available commands and options.
@@ -79,9 +99,9 @@ I decided to use the following packages to streamline parts of the code:
 
 One assumption that I made around the data is that coordinates for a Floodzone or Parcel will always contain four coordinates. If there was the opportunity for more coordinates, I would adjust the code accordingly. I based this on the two examples in the assessment description.
 
-I also assumed that I didn't need to provide any visual confirmation of the analysis to the user in the terminal. If I were to apply this same tool in a real-world situation, I would include nice feedback as the tool is analyzing the file that the user submitted. For example, instead of just returning error messages for file parsing, I would also include success messaging.
+I also assumed that I didn't need to provide any visual confirmation of the analysis to the user in the terminal. If I were to apply this same tool in a real-world situation, I would include feedback while the tool is analyzing the file that the user submitted. For example, instead of just returning error messages for file parsing, I would also include success messaging at each step.
 
-I broke out the logic into two separate files, one for file parsing logic and the other for geospatial analysis to keep concerns separated. These are in the `utils` directory, alongside the corresponding tests for each file.
+I broke out the logic into two separate files, one for file parsing logic and the other for geospatial analysis logic to keep concerns separated. These are in the `utils` directory, alongside the corresponding tests for each file.
 
 All of the types are included in a type index file. I like to centralize my types as much as possible.
 
