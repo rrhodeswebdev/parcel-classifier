@@ -166,10 +166,15 @@ function handleFile(filepath: string): ParsedData {
 
   const fileResult = readFile(filepath);
 
-  if (!fileResult.success || !fileResult.data) {
+  if (!fileResult.success) {
     const errorMessage =
       fileResult.error?.message || `File not found - ${filepath}`;
     process.stderr.write(`----- No File Found: ${errorMessage}\n`);
+    process.exit(1);
+  }
+
+  if (!fileResult.data) {
+    process.stderr.write(`----- No data found in file - ${filepath}\n`);
     process.exit(1);
   }
 
