@@ -169,7 +169,7 @@ function handleFile(filepath: string): ParsedData {
   if (!fileResult.success || !fileResult.data) {
     const errorMessage =
       fileResult.error?.message || `File not found - ${filepath}`;
-    process.stderr.write(`----- Error: ${errorMessage}\n`);
+    process.stderr.write(`----- No File Found: ${errorMessage}\n`);
     process.exit(1);
   }
 
