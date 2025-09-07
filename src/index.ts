@@ -1,3 +1,5 @@
+#! /usr/bin/env node
+
 import { Command } from "commander";
 import { handleFile } from "./utils/files";
 import { handleGeoAnalysis } from "./utils/geo-analysis";

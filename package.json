@@ -12,7 +12,7 @@
         "start": "node dist/index.js",
         "test": "vitest --coverage",
         "test:visual": "vitest --ui --coverage",
-        "cli:install": "npm install && npm run build && npm link"
+        "cli:install": "npm install && npm run build && npm install -g"
     },
     "keywords": [],
     "author": "",
