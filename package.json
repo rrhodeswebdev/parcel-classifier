@@ -2,7 +2,7 @@
     "name": "parcel-classification",
     "version": "0.0.1",
     "bin": {
-        "parcel-classification": "dist/index.js"
+        "parcel-classification": "./dist/index.js"
     },
     "description": "",
     "main": "index.js",
