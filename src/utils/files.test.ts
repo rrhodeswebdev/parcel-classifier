@@ -1,7 +1,17 @@
-import { test, expect, describe, vi } from "vitest";
+import { test, expect, describe, vi, afterEach, beforeEach } from "vitest";
 import { handleFile } from "./files";
 
 describe("files utility functions", () => {
+  let mockExit: any;
+
+  beforeEach(() => {
+    mockExit = vi.spyOn(process, "exit").mockImplementation((() => {}) as any);
+  });
+
+  afterEach(() => {
+    mockExit.mockRestore();
+  });
+
   test("handleFile correct file format successfully", () => {
     expect(handleFile("./sample-data/parcel-1.txt")).toStrictEqual({
       floodzones: [
@@ -82,74 +92,47 @@ describe("files utility functions", () => {
   });
 
   test("handleFile incorrect floodzone file format successfully", () => {
-    const mockExit = vi
-      .spyOn(process, "exit")
-      .mockImplementation(() => undefined as never);
-
     handleFile("./sample-data/incorrect-floodzone-format.txt");
-
     expect(mockExit).toHaveBeenCalledWith(1);
-
-    mockExit.mockRestore();
   });
 
   test("handleFile incorrect parcel file format successfully", () => {
-    const mockExit = vi
-      .spyOn(process, "exit")
-      .mockImplementation(() => undefined as never);
-
     handleFile("./sample-data/incorrect-parcel-format.txt");
-
     expect(mockExit).toHaveBeenCalledWith(1);
-
-    mockExit.mockRestore();
   });
 
   test("handleFile wrong filetype successfully", () => {
-    const mockExit = vi
-      .spyOn(process, "exit")
-      .mockImplementation(() => undefined as never);
-
     handleFile("./sample-data/wrong-filetype.doc");
-
     expect(mockExit).toHaveBeenCalledWith(1);
-
-    mockExit.mockRestore();
   });
 
   test("handleFile invalid file path successfully", () => {
-    const mockExit = vi.spyOn(process, "exit").mockImplementation(() => {
+    mockExit.mockImplementation(() => {
       throw new Error("process.exit called");
     });
 
     expect(() => handleFile("./sample-data/invalid-file-path.txt")).toThrow(
       "process.exit called"
     );
-
-    mockExit.mockRestore();
   });
 
   test("handleFile no data successfully", () => {
-    const mockExit = vi.spyOn(process, "exit").mockImplementation(() => {
+    mockExit.mockImplementation(() => {
       throw new Error("process.exit called");
     });
 
     expect(() => handleFile("./sample-data/empty-file.txt")).toThrow(
       "process.exit called"
     );
-
-    mockExit.mockRestore();
   });
 
   test("handleFile unknown file data successfully", () => {
-    const mockExit = vi.spyOn(process, "exit").mockImplementation(() => {
+    mockExit.mockImplementation(() => {
       throw new Error("process.exit called");
     });
 
     expect(() => handleFile("./sample-data/unknown-data-included.txt")).toThrow(
       "process.exit called"
     );
-
-    mockExit.mockRestore();
   });
 });
