@@ -1,5 +1,5 @@
 import * as turf from "@turf/turf";
-import { FloodzoneIdentifier, PolygonData } from "../types";
+import type { FloodzoneIdentifier, PolygonData, ParsedData } from "../types";
 import { Feature, Polygon } from "geojson";
 
 // Generate polygons from the data
@@ -102,10 +102,7 @@ function generateInsuredOutput(
 }
 
 // Handle the geo analysis
-function handleGeoAnalysis(parsedData: {
-  floodzones: PolygonData[];
-  parcels: PolygonData[];
-}) {
+function handleGeoAnalysis(parsedData: ParsedData) {
   const { floodzones, parcels } = parsedData;
 
   const floodzonePolygons = generatePolygons(floodzones);

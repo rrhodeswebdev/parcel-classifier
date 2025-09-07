@@ -1,35 +1,40 @@
 export type FloodzoneIdentifier = "X" | "AE" | "VE";
+export type Coordinates = [number, number][];
 
-interface BasePolygonData {
-  coordinates: [number, number][];
+export interface FloodzoneData {
+  readonly type: "floodzone";
+  readonly entityId: FloodzoneIdentifier;
+  readonly coordinates: Coordinates;
 }
 
-export interface FloodzoneData extends BasePolygonData {
-  entityId: FloodzoneIdentifier;
-}
-
-export interface ParcelData extends BasePolygonData {
-  entityId: number;
+export interface ParcelData {
+  readonly type: "parcel";
+  readonly entityId: number;
+  readonly coordinates: Coordinates;
 }
 
 export type PolygonData = FloodzoneData | ParcelData;
 
-export type ValidationErrorType =
+export type ErrorType = 
   | "FLOODZONE"
-  | "PARCEL"
+  | "PARCEL" 
   | "NO_DATA"
-  | "UNKNOWN";
+  | "UNKNOWN"
+  | "FILE_NOT_FOUND";
 
-export type FileErrorType = "FILE_NOT_FOUND";
-
-export interface ValidationResult {
-  isValid: boolean;
-  invalidDataType?: ValidationErrorType;
-  invalidLine?: string;
+export interface Result<T, E = ErrorType> {
+  readonly success: boolean;
+  readonly data?: T;
+  readonly error?: {
+    readonly type: E;
+    readonly message?: string;
+  };
 }
 
-export interface FileReadResult {
-  isValid: boolean;
-  data?: string;
-  invalidDataType?: FileErrorType;
+export type FileReadResult = Result<string, "FILE_NOT_FOUND">;
+export type ValidationResult = Result<void, Exclude<ErrorType, "FILE_NOT_FOUND">>;
+
+export interface ParsedData {
+  readonly floodzones: FloodzoneData[];
+  readonly parcels: ParcelData[];
 }
