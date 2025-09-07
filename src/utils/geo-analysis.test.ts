@@ -83,8 +83,8 @@ describe("geo analysis utility functions", () => {
         ],
       });
 
-    expect(mockWrite).toHaveBeenCalledWith('\nParcel 1 should be insured by VE\n');
-    expect(mockWrite).toHaveBeenCalledWith('\nParcel 2 should be insured by AE\n');
+    expect(mockWrite).toHaveBeenCalledWith('\nParcel 1 should be insured against a VE zone\n');
+    expect(mockWrite).toHaveBeenCalledWith('\nParcel 2 should be insured against a AE zone\n');
     
     mockWrite.mockRestore();
   });

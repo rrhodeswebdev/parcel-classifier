@@ -96,7 +96,7 @@ function generateInsuredOutput(
 ) {
   insuredParcels.map((overlap) => {
     process.stdout.write(
-      `\nParcel ${overlap.parcel} should be insured by ${overlap.floodzone}\n`
+      `\nParcel ${overlap.parcel} should be insured against a ${overlap.floodzone} zone\n`
     );
   });
 }
