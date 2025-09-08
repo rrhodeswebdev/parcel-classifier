@@ -103,6 +103,8 @@ I also assumed that I didn't need to provide any visual confirmation of the anal
 
 I broke out the logic into two separate files, one for file parsing logic and the other for geospatial analysis logic to keep concerns separated. These are in the `utils` directory, alongside the corresponding tests for each file.
 
+For testing, I encorporated all automated tests that test both high level end-to-end functionality and individual unit tests for the util functions. Although there are probably use cases not covered in the test, there is good coverage and a range of scenarios for the tests.
+
 All of the types are included in a type index file. I like to centralize my types as much as possible.
 
 ## AI Usage
