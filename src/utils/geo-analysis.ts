@@ -1,5 +1,10 @@
 import * as turf from "@turf/turf";
-import type { FloodzoneIdentifier, PolygonData, ParsedData } from "../types";
+import type {
+  FloodzoneIdentifier,
+  PolygonData,
+  ParsedData,
+  Coordinates,
+} from "../types";
 import { Feature, Polygon } from "geojson";
 
 // Generate polygons from the data
@@ -13,10 +18,12 @@ function generatePolygons(data: PolygonData[]) {
 
 // Create a polygon from the data
 function createPolygon(
-  coordinates: PolygonData["coordinates"],
+  coordinates: Coordinates,
   identifier: FloodzoneIdentifier | number
 ) {
-  const closedCoordinates = ensureClosedPolygon(coordinates);
+  const closedCoordinates = isPolygonClosed(coordinates)
+    ? coordinates
+    : createClosedCoordinates(coordinates);
 
   const properties: { name: string } = {
     name: identifier.toString(),
@@ -25,31 +32,26 @@ function createPolygon(
   return turf.polygon([closedCoordinates], properties);
 }
 
-// Ensure the polygon is closed
-function ensureClosedPolygon(coordinates: number[][]): number[][] {
-  if (coordinates.length === 0) return coordinates;
+// Check if polygon is closed
+function isPolygonClosed(coordinates: Coordinates): boolean {
+  if (coordinates.length === 0) return true;
 
   const first = coordinates[0];
   const last = coordinates[coordinates.length - 1];
 
-  if (first[0] !== last[0] || first[1] !== last[1]) {
-    return [...coordinates, first];
-  }
-
-  return coordinates;
+  return first[0] === last[0] && first[1] === last[1];
 }
 
 // Prepare the data for polygons
 function prepareDataForPolygons(data: PolygonData[]) {
   return data.map((item) => {
-    const closedCoordinates = [...item.coordinates];
-
-    if (!ensureClosedPolygon(closedCoordinates)) {
-      closedCoordinates.push(closedCoordinates[0]);
-    }
-
+    const closedCoordinates = createClosedCoordinates(item.coordinates);
     return { ...item, coordinates: closedCoordinates };
   });
+}
+
+function createClosedCoordinates(coordinates: Coordinates): Coordinates {
+  return [...coordinates, coordinates[0]];
 }
 
 // Check for overlaps
@@ -114,4 +116,14 @@ function handleGeoAnalysis(parsedData: ParsedData) {
   generateInsuredOutput(insuredParcels);
 }
 
-export { handleGeoAnalysis };
+export {
+  handleGeoAnalysis,
+  generatePolygons,
+  createPolygon,
+  isPolygonClosed,
+  prepareDataForPolygons,
+  createClosedCoordinates,
+  checkOverlaps,
+  generateInsuredParcels,
+  generateInsuredOutput,
+};
