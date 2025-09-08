@@ -185,11 +185,23 @@ function handleFile(filepath: string): ParsedData {
     process.stderr.write(
       `----- Data format validation failed - ${error.message}\n`
     );
-    
+
     process.exit(1);
   }
 
   return parseData(fileResult.data);
 }
 
-export { handleFile };
+export {
+  handleFile,
+  parseData,
+  readFile,
+  verifyCorrectFormat,
+  readFileData,
+  parseLines,
+  verifyFileExists,
+  verifyFileExtension,
+  verifyFloodzoneData,
+  verifyParcelData,
+  verifyCoordinates,
+};
