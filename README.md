@@ -7,7 +7,9 @@
 - Node.js (version 16 or higher)
 - npm
 
-### Install from source
+### Install from symlink
+
+Please not that you might run into permission issues from the symlink. If so, please directly install and run from the project
 
 1. Clone the repository:
 
@@ -26,6 +28,8 @@
    ```bash
    parcel-classification
    ```
+
+### Install from project
 
 Alternatively, you can run directly without global installation:
 
